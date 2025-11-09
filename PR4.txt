@@ -1,0 +1,34 @@
+int motor=7;
+int buzz=8;
+int led= 13;
+
+void setup(){
+	pinMode(motor,OUTPUT);
+  	pinMode(led,OUTPUT);
+  	pinMode(buzz,OUTPUT);
+  	Serial.begin(9600);
+
+}
+
+void loop(){
+  if(Serial.available()){
+  	String cmd = Serial.readStringUntil('\n');
+    if(cmd=="on" or cmd=="ON"){
+    	digitalWrite(motor,HIGH);
+      	digitalWrite(led,HIGH);
+      	digitalWrite(buzz,HIGH);
+    }
+    else {
+      if(cmd=="off" or cmd=="OFF"){
+        digitalWrite(motor,LOW);
+      	digitalWrite(led,LOW);
+      	digitalWrite(buzz,LOW);
+      }
+      else{
+      	Serial.println("Invalid Command");
+      
+      }
+    }
+  }
+	
+}
