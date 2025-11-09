@@ -1,0 +1,88 @@
+/*
+  Practical Assignment 5: Sending Sensor Data to Firebase (Simplified)
+  
+  Reads from a DHT22 sensor and sends data to Firebase.
+*/
+
+// --- Library Includes ---
+#include <WiFi.h>
+#include <HTTPClient.h>
+#include <DHT.h>
+#include "Adafruit_Sensor.h"
+
+// --- Sensor Configuration ---
+#define DHTPIN 15
+#define DHTTYPE DHT22
+DHT dht(DHTPIN, DHTTYPE);
+
+// --- IMPORTANT: Firebase Configuration ---
+// Make sure to add "/sensor_readings.json" at the end of your URL
+const char* DATABASE_URL = "https://YOUR_DATABASE_URL_HERE.firebaseio.com/sensor_readings.json";
+
+// --- Wi-Fi Configuration (for Wokwi) ---
+const char* ssid = "Wokwi-GUEST";
+const char* password = "";
+
+void setup() {
+  Serial.begin(115200); // For serial monitor
+  dht.begin();          // Start sensor
+
+  // --- Connect to Wi-Fi ---
+  Serial.print("Connecting to WiFi");
+  WiFi.begin(ssid, password);
+  while (WiFi.status() != WL_CONNECTED) {
+    delay(500);
+    Serial.print(".");
+  }
+  Serial.println("\nConnected!");
+}
+
+void loop() {
+  // Wait 5 seconds between readings.
+  // For a real application, make this longer (e.g., 60000 for 1 minute)
+  delay(5000);
+
+  // --- 1. Read Sensor Data ---
+  float h = dht.readHumidity();
+  float t = dht.readTemperature();
+
+  // Check if read failed
+  if (isnan(h) || isnan(t)) {
+    Serial.println("Failed to read from DHT sensor!");
+    return; // Try again next loop
+  }
+
+  Serial.print("Temp: " + String(t) + "°C, ");
+  Serial.println("Humidity: " + String(h) + "%");
+
+  // --- 2. Prepare JSON Data ---
+  // Using millis() for a simple timestamp
+  String jsonPayload = "{\"temp\":" + String(t, 2) +
+                         ",\"humidity\":" + String(h, 2) +
+                         ",\"timestamp\":" + String(millis()) + "}";
+
+  // --- 3. Send Data to Firebase ---
+  HTTPClient http;
+
+  if (http.begin(DATABASE_URL)) { // Start connection
+    http.addHeader("Content-Type", "application/json");
+
+    // Send the POST request
+    int httpResponseCode = http.POST(jsonPayload);
+
+    if (httpResponseCode > 0) {
+      // Success
+      Serial.println("Data sent! Response code: " + String(httpResponseCode));
+      Serial.println(http.getString()); // Print Firebase response
+    } else {
+      // Failure
+      Serial.println("Error sending data. Code: " + String(httpResponseCode));
+    }
+    
+    http.end(); // IMPORTANT: Close connection
+  } else {
+    Serial.println("Failed to start HTTP client.");
+  }
+}
+
+
