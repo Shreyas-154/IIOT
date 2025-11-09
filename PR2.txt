@@ -1,0 +1,51 @@
+int pirPin = 9;      // PIR sensor pin
+int ldrPin = A0;     // LDR analog pin
+int ledPin = 8;     // LED pin
+int darkThreshold = 500; // Lower = darker
+bool armed = true;   // System starts armed
+int buzz=7;
+void setup() {
+  pinMode(pirPin, INPUT);
+  pinMode(ledPin, OUTPUT);
+  Serial.begin(9600);
+  Serial.println("System Ready...");
+  Serial.println("Type ARM or DISARM to control system");
+  pinMode(buzz,OUTPUT);
+}
+
+void loop() {
+  int motion = digitalRead(pirPin);
+  int lightValue = analogRead(ldrPin);
+
+  // If system armed and motion occurs in dark
+  if (armed && motion == HIGH && lightValue < darkThreshold) {
+    digitalWrite(ledPin, HIGH);
+    digitalWrite(buzz,HIGH);
+    Serial.println(" ALERT: Motion detected in the dark!");
+    delay(1500);
+  } else {
+    digitalWrite(ledPin, LOW);
+    digitalWrite(buzz,LOW);
+  }
+
+  // Check for user input
+  if (Serial.available()) {
+    String command = Serial.readStringUntil('\n');
+    command.trim();
+    command.toUpperCase();
+
+    if (command == "ARM") {
+      armed = true;
+      Serial.println("System ARMED ");
+    } 
+    else if (command == "DISARM") {
+      armed = false;
+      Serial.println("System DISARMED ");
+    } 
+    else {
+      Serial.println("Invalid command. Type ARM or DISARM.");
+    }
+  }
+
+  delay(200);
+}
