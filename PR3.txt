@@ -1,0 +1,26 @@
+int pirPin = 12;
+int ledPin = 7;
+int pirState = LOW;
+
+void setup() {
+  pinMode(pirPin, INPUT);
+  pinMode(ledPin, OUTPUT);
+  Serial.begin(9600);
+}
+
+void loop() {
+  int val = digitalRead(pirPin);
+  if (val == HIGH) {
+    digitalWrite(ledPin, HIGH);
+    if (pirState == LOW) {
+      Serial.println("Motion detected!");
+      pirState = HIGH;
+    }
+  } else {
+    digitalWrite(ledPin, LOW);
+    if (pirState == HIGH) {
+      Serial.println("Motion ended.");
+      pirState = LOW;
+    }
+  }
+}
