@@ -1,0 +1,45 @@
+//Arduino 1
+int sensorPin = A0;
+float temperature;
+
+void setup() {
+  Serial.begin(9600); // Start communication with receiver
+}
+
+void loop() {
+  int sensorValue = analogRead(sensorPin);
+  float voltage = analogRead(sensorPin) * (5.0 / 1024.0);
+ float temperature = (voltage - 0.5) * 100.0; // LM35 formula
+  Serial.println(temperature); // Send data
+  delay(1000);
+}
+
+
+
+//Arduino 2
+String data;
+float temp;
+int ledPin = 13;
+float threshold = 30.0;
+
+void setup() {
+  Serial.begin(9600);
+  pinMode(ledPin, OUTPUT);
+}
+
+void loop() {
+  if (Serial.available()) {
+    data = Serial.readStringUntil('\n');
+    temp = data.toFloat(); // convert string to number
+    
+    Serial.print("Temperature: ");
+    Serial.println(temp);
+    
+    if (temp > threshold) {
+      digitalWrite(ledPin, HIGH);
+      Serial.println("ALERT: Temperature High!");
+    } else {
+      digitalWrite(ledPin, LOW);
+    }
+  }
+}
