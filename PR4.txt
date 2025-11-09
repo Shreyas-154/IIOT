@@ -32,3 +32,72 @@ void loop(){
   }
 	
 }
+
+--------------------
+import tkinter as tk
+from tkinter import ttk
+import random
+import threading
+import time
+
+# Simulated CPS Data Update Function
+def update_sensor_data():
+    while True:
+        temp_var.set(f"{random.uniform(20, 35):.2f} °C")
+        humidity_var.set(f"{random.uniform(30, 60):.2f} %")
+        motion_var.set(random.choice(["Detected", "Not Detected"]))
+        time.sleep(2)  # Update every 2 seconds
+
+# Actuator Control Functions
+def toggle_fan():
+    if fan_button.config('text')[-1] == 'Turn ON':
+        fan_button.config(text='Turn OFF', bg='green')
+        status_fan.set("Fan: ON")
+    else:
+        fan_button.config(text='Turn ON', bg='red')
+        status_fan.set("Fan: OFF")
+
+def toggle_light():
+    if light_button.config('text')[-1] == 'Turn ON':
+        light_button.config(text='Turn OFF', bg='green')
+        status_light.set("Light: ON")
+    else:
+        light_button.config(text='Turn ON', bg='red')
+        status_light.set("Light: OFF")
+
+# Tkinter GUI Setup
+root = tk.Tk()
+root.title("CPS Monitoring & Control System")
+root.geometry("400x400")
+
+# Sensor Data Display
+tk.Label(root, text="Sensor Readings", font=("Arial", 14)).pack(pady=10)
+
+temp_var = tk.StringVar()
+humidity_var = tk.StringVar()
+motion_var = tk.StringVar()
+
+tk.Label(root, textvariable=temp_var, font=("Arial", 12)).pack(pady=5)
+tk.Label(root, textvariable=humidity_var, font=("Arial", 12)).pack(pady=5)
+tk.Label(root, textvariable=motion_var, font=("Arial", 12)).pack(pady=5)
+
+# Actuator Controls
+tk.Label(root, text="Actuator Controls", font=("Arial", 14)).pack(pady=10)
+
+status_fan = tk.StringVar(value="Fan: OFF")
+status_light = tk.StringVar(value="Light: OFF")
+
+fan_button = tk.Button(root, text="Turn ON", bg="red", width=20, command=toggle_fan)
+fan_button.pack(pady=5)
+
+light_button = tk.Button(root, text="Turn ON", bg="red", width=20, command=toggle_light)
+light_button.pack(pady=5)
+
+tk.Label(root, textvariable=status_fan, font=("Arial", 12)).pack(pady=5)
+tk.Label(root, textvariable=status_light, font=("Arial", 12)).pack(pady=5)
+
+# Start Sensor Data Thread
+sensor_thread = threading.Thread(target=update_sensor_data, daemon=True)
+sensor_thread.start()
+
+root.mainloop()
